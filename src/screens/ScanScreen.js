@@ -6,6 +6,9 @@ import waste from '../api/docu-waste'
 import { Audio } from 'expo-av';
 import Line from '../components/Line';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NavBar from '../components/NavBar';
+
+
 const ScanScreen = ({ navigation }) => {
     const [hasPermission, setHasPermission] = useState(null);
     const [scanned, setScanned] = useState(false);
@@ -62,19 +65,19 @@ const ScanScreen = ({ navigation }) => {
                             })
                     } else {
                         const existingItem = i.filter((item) => {
-                            const itemArray = item.barcode === res.data.result.barcode
-                            return itemArray
+                            const itemArray = item.barcode === res.data.result.barcode;
+                            return itemArray;
                         });
-                        const itemCost = parseFloat(existingItem[0].price).toFixed(2)
+                        const itemCost = parseFloat(existingItem[0].price).toFixed(2);
                         existingItem[0].amount += 1;
                         existingItem[0].cost = parseFloat((itemCost * existingItem[0].amount)).toFixed(2);
                         existingItem.push(existingItem[0]);
                         i.concat(existingItem);
-                        AsyncStorage.setItem('items', JSON.stringify(i))
+                        AsyncStorage.setItem('items', JSON.stringify(i));
                     }
 
 
-                })
+                });
 
 
         }
@@ -114,19 +117,21 @@ const ScanScreen = ({ navigation }) => {
 
             {
                 opened === false &&
-                <View>
+                <View style={{marginTop:130}}>
                     <ScanButton
                         setScanned={setScanned}
                         setOpened={setOpened}
                     />
-                    <Button
-                        onPress={() => navigation.navigate("Products")}
-                        title="View Wastage" />
                 </View>
             }
-
-
-
+            <View style={styles.bottomView}>
+                <NavBar
+                    navigation={navigation}
+                    setOpened={setOpened}
+                    setScanned={setScanned}
+                    screen={"Products"}
+                />
+            </View>
         </View>
     );
 }
@@ -135,7 +140,8 @@ const opacity = 'rgba(0, 0, 0, .6)';
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: 'column'
+        flexDirection: 'column',
+        justifyContent: 'space-between'
     },
     layerTop: {
         flex: 2,
@@ -165,6 +171,14 @@ const styles = StyleSheet.create({
         flex: 2,
         backgroundColor: opacity
     },
+    bottomView: {
+        width: '100%',
+        height: 100,
+        backgroundColor: '#cfcfd4',
+        justifyContent: 'center',
+        position: 'absolute', //Here is the trick
+        bottom: 0, //Here is the trick
+    }
 });
 
 export default ScanScreen;

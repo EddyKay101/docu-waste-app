@@ -5,7 +5,7 @@ import Products from "./src/components/Products";
 
 const navigator = createStackNavigator({
     Scan: ScanScreen,
-    Products: Products
+    Products: Products,
 }, {
     initialRouteName: 'Scan',
     defaultNavigationOptions: {

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Button, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import _ from 'lodash';
 const Products = () => {
     const [results, setResults] = useState([]);
     const [total, setTotal] = useState(0)
