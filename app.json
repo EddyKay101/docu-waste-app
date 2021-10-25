@@ -6,9 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#cfcfd4"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -21,8 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#cfcfd4"
       }
     },
     "web": {
@@ -31,8 +28,7 @@
     "packagerOpts": {
       "config": "metro.config.js",
       "sourceExts": [
-      
-      "svg"
+        "svg"
       ]
     }
   }

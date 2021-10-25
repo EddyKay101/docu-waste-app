@@ -6,6 +6,7 @@ import waste from '../api/docu-waste'
 import { Audio } from 'expo-av';
 import Line from '../components/Line';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Header from '../components/Header';
 import NavBar from '../components/NavBar';
 
 
@@ -14,7 +15,7 @@ const ScanScreen = ({ navigation }) => {
     const [scanned, setScanned] = useState(false);
     const [opened, setOpened] = useState(false);
     const [sound, setSound] = useState();
-    const [isProduct, setProduct] = useState(true);
+
 
 
 
@@ -60,9 +61,6 @@ const ScanScreen = ({ navigation }) => {
                         res.data.result.cost = parseFloat(res.data.result.price).toFixed(2);
                         i.push(res.data.result);
                         await AsyncStorage.setItem('items', JSON.stringify(i))
-                            .then(() => {
-                                setProduct(true);
-                            })
                     } else {
                         const existingItem = i.filter((item) => {
                             const itemArray = item.barcode === res.data.result.barcode;
@@ -89,13 +87,16 @@ const ScanScreen = ({ navigation }) => {
 
 
     if (hasPermission === null) {
-        return <Text>Requesting for camera permission</Text>;
+        return <Text style={styles.requestMessage}>Requesting for camera permission</Text>;
     }
     if (hasPermission === false) {
-        return <Text>No access to camera</Text>;
+        return <Text style={styles.requestMessage}>No access to camera</Text>;
     }
     return (
         <View style={styles.container}>
+            <Header
+                title="Scan"
+            />
             {
                 opened && <BarCodeScanner
                     onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -117,21 +118,14 @@ const ScanScreen = ({ navigation }) => {
 
             {
                 opened === false &&
-                <View style={{marginTop:130}}>
+                <View style={styles.scanButton}>
                     <ScanButton
                         setScanned={setScanned}
                         setOpened={setOpened}
                     />
                 </View>
             }
-            <View style={styles.bottomView}>
-                <NavBar
-                    navigation={navigation}
-                    setOpened={setOpened}
-                    setScanned={setScanned}
-                    screen={"Products"}
-                />
-            </View>
+
         </View>
     );
 }
@@ -171,13 +165,15 @@ const styles = StyleSheet.create({
         flex: 2,
         backgroundColor: opacity
     },
-    bottomView: {
-        width: '100%',
-        height: 100,
-        backgroundColor: '#cfcfd4',
-        justifyContent: 'center',
-        position: 'absolute', //Here is the trick
-        bottom: 0, //Here is the trick
+    requestMessage: {
+        textAlign: 'center',
+        marginTop: 50
+    },
+    scanButton: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center'
     }
 });
 

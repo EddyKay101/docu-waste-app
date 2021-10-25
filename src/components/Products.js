@@ -1,50 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Button, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const Products = () => {
+const Products = ({ storageKey, navigation }) => {
     const [results, setResults] = useState([]);
-    const [total, setTotal] = useState(0)
+    const [total, setTotal] = useState(0);
     useEffect(() => {
-        getItem();
-    }, []);
+        const unsubscribed = navigation.addListener('focus', () => {
+            getItem();
+        })
+        return () => {
+            unsubscribed();
+        };
+    }, [navigation]);
 
 
 
     const getItem = async () => {
-        const t = [];
-        await AsyncStorage.getItem('items')
+        const tabularData = [];
+        await AsyncStorage.getItem(storageKey)
             .then((value) => {
                 if (value !== null) {
                     let parsedData = JSON.parse(value);
                     setResults(() => parsedData);
 
                     parsedData.map((data) => {
-                        t.push(data);
+                        tabularData.push(data);
                     });
 
-                    const totalArr = t.reduce((prev, cur) => {
+                    const totalAmount = tabularData.reduce((prev, cur) => {
                         return prev + cur.amount;
                     }, 0);
-                    if (totalArr) {
-                        setTotal(total + totalArr);
+                    if (totalAmount) {
+                        setTotal(total + totalAmount);
                     }
 
                 }
             })
     }
-
-
     const removeItem = async () => {
         try {
-            await AsyncStorage.removeItem('items')
-            .then(() => {
-                setTotal(0);
-                setResults([]);
-            })
-            
-            
+            await AsyncStorage.removeItem(storageKey)
+                .then(() => {
+                    setTotal(0);
+                    setResults([]);
+                })
         } catch (e) {
-
         }
     }
     return (
@@ -107,7 +107,7 @@ const Products = () => {
                     </View>
 
 
-        }
+            }
         </View>
 
     );
