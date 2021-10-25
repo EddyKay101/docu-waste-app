@@ -31,7 +31,9 @@ const HomeScreen = ({ navigation }) => {
                     const overallCost = tabularData.map(item => item.cost).reduce((prev, curr) => parseFloat(prev) + parseFloat(curr), 0);
                     setTotalAmount(totalAmount + overallAmount);
                     setTotalCost(totalCost + parseFloat(overallCost).toFixed(2));
-
+                } else {
+                    setTotalAmount(0);
+                    setTotalCost(0.00);
                 }
             })
     }
