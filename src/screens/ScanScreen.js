@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import ScanButton from '../components/ScanButton';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import waste from '../api/docu-waste'
+import * as services from '../api/docu-waste';
 import { Audio } from 'expo-av';
 import Line from '../components/Line';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from '../components/Header';
-import NavBar from '../components/NavBar';
 
 
 const ScanScreen = ({ navigation }) => {
@@ -51,7 +50,8 @@ const ScanScreen = ({ navigation }) => {
             setOpened(false);
 
             playSound();
-            const res = await waste.get(`/${data}`);
+            const res = await services.products.get(`/${data}`);
+            // const res = await waste.get(`/${data}`);
             await AsyncStorage.getItem('items')
                 .then(async (items) => {
                     const i = items ? JSON.parse(items) : [];

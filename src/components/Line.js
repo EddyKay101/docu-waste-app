@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Animated, StyleSheet, Button } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
 
 const Line = () => {
     const dropAnim = useRef(new Animated.Value(0)).current;

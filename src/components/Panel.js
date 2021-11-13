@@ -7,7 +7,7 @@ const Panel = ({ label, value, icon }) => {
     return (
         <View style={styles.container}>
             <View style={styles.panel}>
-                <View style={styles.top}>
+                <View>
                     <Text style={styles.label}>{label}</Text>
 
 
@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 38,
-        fontFamily: 'Helvetica Neue',
         textAlign: 'center'
     },
     bottom: {

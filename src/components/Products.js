@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, Button, FlatList } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 const Products = ({ storageKey, navigation }) => {
     const [results, setResults] = useState([]);
     const [total, setTotal] = useState(0);
@@ -47,6 +49,9 @@ const Products = ({ storageKey, navigation }) => {
         } catch (e) {
         }
     }
+
+
+
     return (
         <View style={styles.container}>
             {

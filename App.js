@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ScanScreen from "./src/screens/ScanScreen";
 import WasteScreen from "./src/screens/WasteScreen";
 import SplashScreen from './src/screens/SplashScreen';
+import ReportScreen from './src/screens/ReportScreen';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 const Tab = createBottomTabNavigator();
 export default function App() {
@@ -25,6 +26,9 @@ export default function App() {
                                     break;
                                 case 'Waste':
                                     iconName = focused ? 'trash-can' : 'trash-can-outline';
+                                    break;
+                                case 'Report':
+                                    iconName = focused ? 'chart-scatter-plot' : 'chart-bar'
                             }
                             return <MaterialCommunityIcons name={iconName} size={32} color="black" />;
                         },
@@ -34,6 +38,7 @@ export default function App() {
                     <Tab.Screen name="Splash" component={SplashScreen} />
                     <Tab.Screen name="Scan" component={ScanScreen} />
                     <Tab.Screen name="Waste" component={WasteScreen} />
+                    <Tab.Screen name="Report" component={ReportScreen} />
                 </Tab.Navigator>
             </NavigationContainer>
         </SafeAreaProvider>

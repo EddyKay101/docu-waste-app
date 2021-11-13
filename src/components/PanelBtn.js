@@ -31,7 +31,6 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 38,
-        fontFamily: 'Helvetica Neue',
         textAlign: 'center'
     },
 })
