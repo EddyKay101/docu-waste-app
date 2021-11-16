@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, Dimensions } from 'react-native'
+import React, { useState } from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import moment from 'moment';
 import * as services from '../api/docu-waste';
 import { VictoryBar, VictoryChart, VictoryTheme, VictoryLabel, VictoryPie, VictoryLegend } from "victory-native";
@@ -182,14 +182,14 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                     isAmount &&
                     <VictoryChart animate width={400} theme={VictoryTheme.material}>
                         <VictoryLabel text="By Amount" x={225} y={30} textAnchor="end" />
-                        <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" />
+                        <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" labels={({ datum }) => `${datum.amount}`} />
                     </VictoryChart>
                 }
                 {
                     isCost &&
                     <VictoryChart width={400} animate theme={VictoryTheme.material}>
                         <VictoryLabel text="By Cost" x={225} y={30} textAnchor="end" />
-                        <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" />
+                        <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" labels={({ datum }) => `£${datum.cost}`} />
                     </VictoryChart>
                 }
                 {

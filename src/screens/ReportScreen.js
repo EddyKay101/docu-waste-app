@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import Header from '../components/Header';
 import DropDownPicker from 'react-native-dropdown-picker';
 import Spinner from 'react-native-loading-spinner-overlay';
 import YearlyReports from '../components/YearlyReports';
+import MonthlyReports from '../components/MonthlyReports';
 const ReportScreen = () => {
-    const [open, setOpen] = useState(false);
+    const [timeLineOpen, setTimelineOpen] = useState(false);
+    const [monthOpen, setMonthOpen] = useState(false);
     const [value, setValue] = useState(null);
     const [options, setOptions] = useState([
         { label: 'Monthly', value: 'monthly' },
         { label: 'Yearly', value: 'yearly' }
     ]);
     const [yearlyWasteDataByAmount, setYearlyWasteDataByAmount] = useState([]);
+    const [monthlyWasteDataByAmount, setMonthlyWasteDataByAmount] = useState([]);
     const [yearlyWasteDataByCost, setYearlyWasteDataByCost] = useState([]);
+    const [monthlyWasteDataByCost, setMonthlyWasteDataByCost] = useState([]);
     const [yearlyTopFive, setYearlyTopFive] = useState([]);
+    const [monthlyTopFive, setMonthlyTopFive] = useState([]);
     const [isYearly, setIsYearly] = useState(false);
     const [isMonthly, setIsMonthly] = useState(false);
     const [spinner, setSpinner] = useState(false);
@@ -34,7 +39,7 @@ const ReportScreen = () => {
         }
     }
     return (
-        <View style={styles.container} onStartShouldSetResponder={() => setOpen(false)}>
+        <View style={styles.container} onStartShouldSetResponder={() => setTimelineOpen(false)}>
             <Header
                 title="Reports"
             />
@@ -45,20 +50,22 @@ const ReportScreen = () => {
 
 
             <DropDownPicker
-                open={open}
+                open={timeLineOpen}
                 value={value}
                 items={options}
-                setOpen={setOpen}
+                setOpen={setTimelineOpen}
                 setValue={setValue}
                 setItems={setOptions}
-                onChangeValue={() => handleTimeLineData(value)}
+                onChangeValue={() => {
+                    handleTimeLineData(value)
+                }}
                 placeholder="Timeline"
                 dropDownContainerStyle={{
                     width: '90%',
                     alignSelf: 'center',
                     top: 169
                 }}
-                zIndex={open ? 9000 : 1000}
+                zIndex={timeLineOpen ? 9000 : 1000}
                 style={styles.dropDownContainer}
             />
 
@@ -73,6 +80,16 @@ const ReportScreen = () => {
                         yearlyWasteDataByCost={yearlyWasteDataByCost}
                         setYearlyTopFive={setYearlyTopFive}
                         yearlyTopFive={yearlyTopFive}
+                    />
+                }
+                {
+                    isMonthly &&
+                    <MonthlyReports
+                        setTimelineOpen={setTimelineOpen}
+                        monthOpen={monthOpen}
+                        setSpinner={setSpinner}
+                        setMonthlyWasteDataByAmount={setMonthlyWasteDataByAmount}
+                        monthlyWasteDataByAmount={monthlyWasteDataByAmount}
                     />
                 }
             </View>
