@@ -135,7 +135,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         colors.map(color => {
             data.map(n => {
                 empty.push({
-                    name: n.amount, symbol: { fill: color }
+                    name: n.amount.toString(), symbol: { fill: color }
                 })
             })
         });
@@ -153,9 +153,9 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         return filteredArr;
     }
     return (
-        <View style={{ ...styles.container }}>
+        <View style={{ ...styles.container }} >
             <View style={styles.headerSelection}>
-                <Text style={styles.headerLabel}>Yearly Data, By Amount & Cost</Text>
+                <Text style={styles.headerLabel}>Yearly Data, by Amount & Cost</Text>
                 <View style={styles.selection}>
                     <TouchableOpacity
                         style={styles.button}
@@ -173,7 +173,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                         style={styles.button}
                         onPress={() => handleSelection('topFive')}
                     >
-                        <Text>Top 5 Wastage</Text>
+                        <Text>Most Wasted</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -181,14 +181,14 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                 {
                     isAmount &&
                     <VictoryChart animate width={400} theme={VictoryTheme.material}>
-                        <VictoryLabel text="By Amount" x={225} y={30} textAnchor="end" />
+                        <VictoryLabel text="By Amount 🗑" x={225} y={30} textAnchor="end" />
                         <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" labels={({ datum }) => `${datum.amount}`} />
                     </VictoryChart>
                 }
                 {
                     isCost &&
                     <VictoryChart width={400} animate theme={VictoryTheme.material}>
-                        <VictoryLabel text="By Cost" x={225} y={30} textAnchor="end" />
+                        <VictoryLabel text="By Cost 💷" x={225} y={30} textAnchor="end" />
                         <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" labels={({ datum }) => `£${datum.cost}`} />
                     </VictoryChart>
                 }
@@ -196,7 +196,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                     isTopFive &&
                     <View style={{ width: '100%', alignItems: 'center' }}>
                         <VictoryPie
-                            colorScale={["tomato", "orange", "gold", "cyan", "navy"]}
+                            colorScale={["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"]}
                             data={yearlyTopFive}
                             x={`product`}
                             y="amount"
@@ -210,7 +210,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                             centerTitle
                             orientation="horizontal"
                             gutter={20}
-                            data={handleLegend(yearlyTopFive, ["tomato", "orange", "gold", "cyan", "navy"])}
+                            data={handleLegend(yearlyTopFive, ["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"])}
                         />
                     </View>
 

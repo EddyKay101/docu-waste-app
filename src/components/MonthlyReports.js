@@ -1,41 +1,57 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import moment from 'moment';
 import * as services from '../api/docu-waste';
-import { VictoryBar, VictoryChart, VictoryTheme, VictoryLabel, VictoryPie, VictoryLegend, VictoryGroup } from "victory-native";
+import { VictoryBar, VictoryChart, VictoryTheme, VictoryLabel, VictoryPie, VictoryLegend } from "victory-native";
 import DropDownPicker from 'react-native-dropdown-picker';
-const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWasteDataByCost, monthlyWasteDataByAmount, monthlyWasteDataByCost, setMonthlyTopFive, monthlyTopFive, monthOpen, setTimelineOpen }) => {
+const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWasteDataByCost, monthlyWasteDataByAmount, monthlyWasteDataByCost, setMonthlyTopFive, monthlyTopFive, onChildDropdownOpen }) => {
 
     const [isAmount, setIsAmount] = useState(false);
     const [isCost, setIsCost] = useState(false);
     const [isTopFive, setIsTopFive] = useState(false);
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
-    const [hasValue, setHasValue] = useState(false);
-    const [options, setOptions] = useState([
-        { label: 'Jan', value: 'jan' },
-        { label: 'Feb', value: 'feb' },
-        { label: 'Mar', value: 'mar' },
-        { label: 'Apr', value: 'apr' },
-        { label: 'May', value: 'may' },
-        { label: 'Jun', value: 'jun' },
-        { label: 'Jul', value: 'jul' },
-        { label: 'Aug', value: 'aug' },
-        { label: 'Sep', value: 'sep' },
-        { label: 'Oct', value: 'oct' },
-        { label: 'Nov', value: 'nov' },
-        { label: 'Dec', value: 'dec' }
-    ]);
-    const handleSelection = (selection) => {
+    const [options, setOptions] = useState([]);
+    const [isSelection, setSelection] = useState(false);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                let months = [];
+                const res = await services.waste.get();
+                const sortedData = res.data.result.sort((a, b) => {
+                    return new Date(a.dateScanned) - new Date(b.dateScanned)
+                });
+                const month = sortedData.map(sd => ({ ...sd, month: moment(sd.dateScanned).format('MMM') }));
+                const sumCostPerMonth = month.reduce((acc, cur) => {
+                    const costToInt = parseInt(cur.cost);
+                    acc[cur.month] = acc[cur.month] + costToInt || costToInt;
+                    return acc
+                }, {});
+                const keys = Object.keys(sumCostPerMonth);
+                keys.forEach(key => {
+                    months.push({
+                        label: key.toUpperCase(),
+                        value: key.toLowerCase()
+                    });
+                });
+                setOptions(months);
+            } catch (err) {
+                console.log(err)
+            }
+        })();
+    }, [])
+
+    const handleSelection = (selection, month) => {
         switch (selection) {
             case 'amount':
-                handleGetMonthlyDataByAmount();
+                handleGetMonthlyDataByAmount(month);
                 break;
             case 'cost':
-                handleGetMonthlyDataByCost();
+                handleGetMonthlyDataByCost(month);
                 break;
             case 'topFive':
-                handleGetTopFive();
+                handleGetTopFive(month);
                 break;
             default:
                 setIsCost(false);
@@ -43,7 +59,7 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
                 setIsTopFive(false);
         }
     };
-    const byAmount = obj => {
+    const bySelection = (obj, selection) => {
         const wk = [1, 2, 3, 4, 5];
         const keys = Object.keys(obj);
         const oldArr = keys.map(key => {
@@ -54,21 +70,35 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
                     wk.splice(index, 1);
                 }
             }
-            return {
-                week: `wk${key}`,
-                amount: obj[key],
-                fill: 'red'
+            if (selection === 'amount') {
+                return {
+                    week: `wk${key}`,
+                    amount: obj[key],
+                }
+            } else if (selection === 'cost') {
+                return {
+                    week: `wk${key}`,
+                    cost: obj[key],
+                }
             }
         });
         const newArr = wk.map(w => {
-            return {
-                week: `wk${w}`,
-                amount: 0
+            if (selection === 'amount') {
+                return {
+                    week: `wk${w}`,
+                    amount: 0
+                }
+            }
+            else if (selection === 'cost') {
+                return {
+                    week: `wk${w}`,
+                    cost: 0
+                }
             }
         });
         const combined = [...oldArr, ...newArr];
         combined.map(c => {
-            if (c.week === 'wk5' && c.amount === 0) {
+            if (c.week === 'wk5' && c.amount === 0 || c.week === 'wk5' && c.cost === 0) {
                 const index = combined.indexOf(c);
                 if (index > -1) {
                     combined.splice(index, 1);
@@ -78,6 +108,18 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
         return combined.sort((a, b) => a.week.localeCompare(b.week))
     };
 
+    const byProduct = obj => {
+        const res = [];
+        const keys = Object.keys(obj);
+        keys.forEach(key => {
+            res.push({
+                product: key,
+                amount: obj[key]
+            });
+        });
+        return res.sort((a, b) => b.amount - a.amount).slice(0, 5);;
+    };
+
     const handleGetMonthlyDataByAmount = async (month) => {
         setSpinner(true);
         setIsAmount(true);
@@ -85,8 +127,35 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
         setIsTopFive(false);
         try {
             const res = await services.waste.get();
+            const week = res.data.result.map(data => ({ ...data, week: Math.floor((moment(data.dateScanned).date() - 1) / 7) + 1 }));
+            let dataForMonth = [];
+            let total;
+            week.map(data => {
+                if (moment(data.dateScanned).format("MMM").toUpperCase() === month.toUpperCase()) {
+                    dataForMonth.push(data);
+                    const totalPerWeek = dataForMonth.reduce((acc, cur) => {
+                        acc[cur.week] = acc[cur.week] + cur.amount || cur.amount;
+                        return acc;
+                    }, {});
+                    total = totalPerWeek;
+                }
+            });
+            const amt = bySelection(total, 'amount');
+            setMonthlyWasteDataByAmount(amt);
+            setSpinner(false);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const handleGetMonthlyDataByCost = async (month) => {
+        setSpinner(true);
+        setIsCost(true);
+        setIsAmount(false);
+        setIsTopFive(false);
+        try {
+            const res = await services.waste.get();
             if (res.data.result) {
-                setHasValue(true);
                 const week = res.data.result.map(data => ({ ...data, week: Math.floor((moment(data.dateScanned).date() - 1) / 7) + 1 }));
                 let dataForMonth = [];
                 let total;
@@ -94,98 +163,193 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
                     if (moment(data.dateScanned).format("MMM").toUpperCase() === month.toUpperCase()) {
                         dataForMonth.push(data);
                         const totalPerWeek = dataForMonth.reduce((acc, cur) => {
-                            acc[cur.week] = acc[cur.week] + cur.amount || cur.amount;
+                            const costToInt = parseInt(cur.cost);
+                            acc[cur.week] = acc[cur.week] + costToInt || costToInt;
                             return acc;
                         }, {});
                         total = totalPerWeek;
                     }
                 });
-                const amt = byAmount(total);
-                setMonthlyWasteDataByAmount(amt);
+                const cost = bySelection(total, 'cost');
+                setMonthlyWasteDataByCost(cost);
                 setSpinner(false);
-            } else {
-                setHasValue(false);
             }
-
-
-
         } catch (err) {
             console.log(err);
         }
     }
 
+    const handleGetTopFive = async (month) => {
+        setSpinner(true);
+        setIsCost(false);
+        setIsAmount(false);
+        setIsTopFive(true);
+        try {
+            const res = await services.waste.get();
+            const week = res.data.result.map(data => ({ ...data, week: Math.floor((moment(data.dateScanned).date() - 1) / 7) + 1 }));
+            let dataForMonth = [];
+            let total;
+            week.map(data => {
+                if (moment(data.dateScanned).format("MMM").toUpperCase() === month.toUpperCase()) {
+                    dataForMonth.push(data);
+                    const totalPerWeek = dataForMonth.reduce((acc, cur) => {
+                        acc[cur.product] = acc[cur.product] + cur.amount || cur.amount;
+                        return acc;
+                    }, {});
+                    total = totalPerWeek;
+                }
+            });
+            setMonthlyTopFive(byProduct(total, 'topFive'));
+            setSpinner(false);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const handleLegend = (data, colors) => {
+        const empty = [];
+        colors.map(color => {
+            data.map(n => {
+                empty.push({
+                    name: n.amount.toString(), symbol: { fill: color }
+                })
+            })
+        });
+
+        const filteredArr = empty.reduce((acc, current) => {
+            const x = acc.find(item => item.name === current.name);
+            const y = acc.find(item => item.symbol.fill === current.symbol.fill);
+            if (!x && !y) {
+                return acc.concat([current]);
+            } else {
+                return acc;
+            }
+        }, []);
+        return filteredArr;
+    }
+
     return (
-        <View style={{ ...styles.container }}>
-            <View style={styles.headerSelection}>
-                <Text style={styles.headerLabel}>Monthly Data, By Amount & Cost</Text>
-
-                <DropDownPicker
-                    open={open}
-                    value={value}
-                    items={options}
-                    setOpen={setOpen}
-                    setValue={setValue}
-                    setItems={setOptions}
-                    onChangeValue={() => {
-                        handleGetMonthlyDataByAmount(value)
-                    }}
-                    placeholder="Month"
-                    dropDownContainerStyle={{
-                        width: '50%',
-                        marginLeft: 20,
-                        top: 70,
-                        zIndex: 1000
-                    }}
-                    zIndex={open ? 9000 : 1000}
-                    style={styles.dropDownContainer}
-                />
-
-                <View style={styles.selection}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('amount')}
-                    >
-                        <Text>By Amount</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('cost')}
-                    >
-                        <Text>By Cost</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('topFive')}
-                    >
-                        <Text>Top 5 Wastage</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-            <View style={styles.chartContainer}>
+        <View style={{ ...styles.container }} onStartShouldSetResponder={() => {
+            if (open) {
+                setOpen(false)
+            }
+        }
+        }>
+            <Text style={styles.headerLabel}>Monthly Data, by Amount & Cost</Text>
+            <DropDownPicker
+                open={open}
+                value={value}
+                items={options}
+                setOpen={setOpen}
+                setValue={setValue}
+                setItems={setOptions}
+                onChangeValue={() => {
+                    if (value !== null) {
+                        setSelection(true);
+                    } else {
+                        setSelection(false);
+                    }
+                }}
+                onOpen={onChildDropdownOpen}
+                placeholder="Month"
+                dropDownContainerStyle={{
+                    width: '50%',
+                    marginLeft: 20,
+                    top: 70,
+                    zIndex: 1000
+                }}
+                zIndex={open ? 9000 : 1000}
+                style={styles.dropDownContainer}
+            />
+            <View style={{ zIndex: 1 }}>
+                {
+                    isSelection &&
+                    <View style={styles.selection}>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => handleSelection('amount', value)}
+                        >
+                            <Text>By Amount</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => handleSelection('cost', value)}
+                        >
+                            <Text>By Cost</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => handleSelection('topFive', value)}
+                        >
+                            <Text>Most Wasted</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
                 {
                     isAmount &&
-                    <VictoryChart animate width={400} theme={VictoryTheme.material}>
+                    <View>
+                        <VictoryChart width={400} theme={VictoryTheme.material}>
 
-                        <VictoryLabel text="By Amount" x={225} y={30} textAnchor="end" />
-                        <VictoryBar
-                            data={monthlyWasteDataByAmount} x="week" y="amount" labels={({ datum }) => `${datum.amount}`} />
-
-                    </VictoryChart>
-
-
+                            <VictoryLabel text="By Amount 🗑" x={225} y={30} textAnchor="end" />
+                            <VictoryBar
+                                data={monthlyWasteDataByAmount} x="week" y="amount" labels={({ datum }) => `${datum.amount}`} style={{
+                                    data: {
+                                        fill: "#cfcfd4",
+                                        stroke: ({ datum }) => datum.amount <= 20 ? "green" : "red",
+                                        fillOpacity: 0.7,
+                                        strokeWidth: 1
+                                    },
+                                    labels: {
+                                        fontSize: 15,
+                                        fill: ({ datum }) => datum.amount <= 20 ? "green" : "red"
+                                    },
+                                }} />
+                        </VictoryChart>
+                        <VictoryLegend x={70} y={1}
+                            centerTitle
+                            orientation="horizontal"
+                            gutter={20}
+                            data={[
+                                { name: "Amount <=20", symbol: { fill: "green" } },
+                                { name: "Amount >20", symbol: { fill: "red" } },
+                            ]}
+                        />
+                    </View>
                 }
                 {
                     isCost &&
-                    <VictoryChart width={400} animate theme={VictoryTheme.material}>
-                        <VictoryLabel text="By Cost" x={225} y={30} textAnchor="end" />
-                        <VictoryBar data={monthlyWasteDataByCost} x="month" y="cost" />
-                    </VictoryChart>
+                    <View>
+                        <VictoryChart width={400} theme={VictoryTheme.material}>
+                            <VictoryLabel text="By Cost 💷" x={225} y={30} textAnchor="end" />
+                            <VictoryBar data={monthlyWasteDataByCost} x="week" y="cost" labels={({ datum }) => `£${datum.cost}`} style={{
+                                data: {
+                                    fill: "#cfcfd4",
+                                    stroke: ({ datum }) => datum.cost <= 50 ? "green" : "red",
+                                    fillOpacity: 0.7,
+                                    strokeWidth: 1
+                                },
+                                labels: {
+                                    fontSize: 15,
+                                    fill: ({ datum }) => datum.cost <= 50 ? "green" : "red"
+                                },
+                            }} />
+                        </VictoryChart>
+                        <VictoryLegend x={70} y={1}
+                            centerTitle
+                            orientation="horizontal"
+                            gutter={20}
+                            data={[
+                                { name: "Cost <=50", symbol: { fill: "green" } },
+                                { name: "Amount >50", symbol: { fill: "red" } },
+                            ]}
+                        />
+                    </View>
                 }
                 {
                     isTopFive &&
                     <View style={{ width: '100%', alignItems: 'center' }}>
                         <VictoryPie
-                            colorScale={["tomato", "orange", "gold", "cyan", "navy"]}
+                            colorScale={["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"]}
                             data={monthlyTopFive}
                             x={`product`}
                             y="amount"
@@ -195,25 +359,20 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
                             labelPosition="centroid"
                             labelPlacement="perpendicular"
                         />
-                        <VictoryLegend x={50} y={2}
+                        <VictoryLegend x={70} y={1}
                             centerTitle
                             orientation="horizontal"
                             gutter={20}
-                            data={handleLegend(monthlyTopFive, ["tomato", "orange", "gold", "cyan", "navy"])}
+                            data={handleLegend(monthlyTopFive, ["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"])}
                         />
                     </View>
-
-
                 }
-
-
             </View>
-
-        </View >
+        </View>
     )
 }
 
-export default MonthlyReports
+export default MonthlyReports;
 
 const styles = StyleSheet.create({
     container: {
@@ -225,14 +384,14 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         alignItems: 'center',
         width: '100%',
-        marginTop: 60
+        marginTop: 20
 
     },
     headerSelection: {
         flexDirection: 'column',
         justifyContent: 'space-between',
         height: 80,
-        zIndex: 10
+
     },
     selection: {
         flexDirection: 'row',
@@ -245,8 +404,7 @@ const styles = StyleSheet.create({
     },
     dropDownContainer: {
         width: '50%',
-        top: 0,
         margin: 20,
-        zIndex: 1000
+        zIndex: 10
     },
 })
