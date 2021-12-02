@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, Button, FlatList } from 'react-native';
+import { View, StyleSheet, Text, Button, TouchableOpacity, FlatList, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import * as services from '../api/docu-waste';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Products = ({ storageKey, navigation }) => {
     const [results, setResults] = useState([]);
@@ -49,6 +50,61 @@ const Products = ({ storageKey, navigation }) => {
         } catch (e) {
         }
     }
+
+    const saveWastage = () => {
+        results.map((res) => {
+            services.postWaste({
+                product: res.product_name,
+                price: parseFloat(res.price).toFixed(2),
+                amount: res.amount,
+                cost: res.cost
+            })
+                .then(() => {
+                    removeItem();
+                })
+        })
+
+    }
+
+    const clearWasteAlert = () =>
+        Alert.alert(
+            "Confirmation",
+            "Are you sure you want to clear waste?",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => {
+                        return;
+                    },
+                    style: "cancel"
+                },
+                {
+                    text: "OK", onPress: () => {
+                        removeItem();
+                    }
+                }
+            ]
+        );
+
+    const saveWasteAlert = () =>
+        Alert.alert(
+            "Confirmation",
+            "Items would be sent for analytics, do you want to continue?",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => {
+                        return;
+                    },
+                    style: "cancel"
+                },
+                {
+                    text: "OK", onPress: () => {
+                        saveWastage();
+                    }
+                }
+            ]
+        );
 
 
 
@@ -103,7 +159,25 @@ const Products = ({ storageKey, navigation }) => {
                                 <Text>Total Wastage</Text>
                                 <Text>{total}</Text>
                             </View>
-                            <Button title="clear" onPress={() => removeItem()} />
+                            <View style={styles.wasteButtonContainer}>
+                                <TouchableOpacity style={styles.wasteBtn} onPress={() => saveWasteAlert()}>
+                                    <LinearGradient
+                                        colors={["#004d40", "#009688"]}
+                                        style={{ borderRadius: 10 }}
+                                    >
+                                        <Text style={styles.wasteBtnTxt}>Save Waste</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.wasteBtn} onPress={() => clearWasteAlert()}>
+                                    <LinearGradient
+                                        colors={["#004d40", "#009688"]}
+                                        style={{ borderRadius: 10 }}
+                                    >
+                                        <Text style={styles.wasteBtnTxt}>Clear</Text>
+                                    </LinearGradient>
+                                </TouchableOpacity>
+                            </View>
+
                         </View>
                     </View>
                     :
@@ -179,7 +253,20 @@ const styles = StyleSheet.create({
     },
     scrollViewHeader: {
         maxHeight: 400,
-
+    },
+    wasteButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        margin: 16
+    },
+    wasteBtn: {
+        width: 150,
+        padding: 16
+    },
+    wasteBtnTxt: {
+        textAlign: 'center',
+        margin: 16,
+        color: '#ffffff'
     }
 
 })

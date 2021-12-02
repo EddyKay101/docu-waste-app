@@ -53,7 +53,8 @@ const styles = StyleSheet.create({
     value: {
         fontSize: 80,
         textAlign: 'center',
-        flex: 2
+        flex: 2,
+        color: '#004d40'
     },
     icon: {
         fontSize: 30,

@@ -30,7 +30,7 @@ export default function App() {
                                 case 'Report':
                                     iconName = focused ? 'chart-scatter-plot' : 'chart-bar'
                             }
-                            return <MaterialCommunityIcons name={iconName} size={32} color="black" />;
+                            return <MaterialCommunityIcons name={iconName} size={32} color={iconName = focused ? '#004d40' : 'black'} />;
                         },
                         headerShown: false,
                         tabBarShowLabel: false

@@ -9,6 +9,9 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
     const [isAmount, setIsAmount] = useState(false);
     const [isCost, setIsCost] = useState(false);
     const [isTopFive, setIsTopFive] = useState(false);
+    const [isAmountLink, setAmountLink] = useState(false);
+    const [isCostLink, setCostLink] = useState(false);
+    const [isTopFiveLink, setTopFiveLink] = useState(false);
     const handleSelection = (selection) => {
         switch (selection) {
             case 'amount':
@@ -64,6 +67,9 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setIsAmount(true);
         setIsCost(false);
         setIsTopFive(false);
+        setAmountLink(true);
+        setCostLink(false);
+        setTopFiveLink(false);
         try {
             const res = await services.waste.get();
             const sortedData = res.data.result.sort((a, b) => {
@@ -89,6 +95,9 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setIsCost(true);
         setIsAmount(false);
         setIsTopFive(false);
+        setAmountLink(false);
+        setCostLink(true);
+        setTopFiveLink(false);
         try {
             const res = await services.waste.get();
             const sortedData = res.data.result.sort((a, b) => {
@@ -115,6 +124,9 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setIsCost(false);
         setIsAmount(false);
         setIsTopFive(true);
+        setAmountLink(false);
+        setCostLink(false);
+        setTopFiveLink(true);
         try {
             const res = await services.waste.get();
             const sumByProduct = res.data.result.reduce((acc, cur) => {
@@ -157,24 +169,40 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
             <View style={styles.headerSelection}>
                 <Text style={styles.headerLabel}>Yearly Data, by Amount & Cost</Text>
                 <View style={styles.selection}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('amount')}
-                    >
-                        <Text>By Amount</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('cost')}
-                    >
-                        <Text>By Cost</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => handleSelection('topFive')}
-                    >
-                        <Text>Most Wasted</Text>
-                    </TouchableOpacity>
+                    <View>
+                        {
+                            isAmountLink &&
+                            <View style={styles.textBar}></View>
+                        }
+                        <TouchableOpacity
+                            onPress={() => handleSelection('amount')}
+                        >
+                            <Text>By Amount</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        {
+                            isCostLink &&
+                            <View style={styles.textBar}></View>
+                        }
+                        <TouchableOpacity
+                            onPress={() => handleSelection('cost')}
+                        >
+                            <Text>By Cost</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View>
+                        {
+                            isTopFiveLink &&
+                            <View style={styles.textBar}></View>
+                        }
+                        <TouchableOpacity
+                            onPress={() => handleSelection('topFive')}
+                        >
+                            <Text>Most Wasted</Text>
+                        </TouchableOpacity>
+                    </View>
+
                 </View>
             </View>
             <View style={styles.chartContainer}>
@@ -182,21 +210,21 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                     isAmount &&
                     <VictoryChart animate width={400} theme={VictoryTheme.material}>
                         <VictoryLabel text="By Amount 🗑" x={225} y={30} textAnchor="end" />
-                        <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" labels={({ datum }) => `${datum.amount}`} />
+                        <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" labels={({ datum }) => `${datum.amount}`} style={{ data: { fill: '#004d40' } }} />
                     </VictoryChart>
                 }
                 {
                     isCost &&
                     <VictoryChart width={400} animate theme={VictoryTheme.material}>
                         <VictoryLabel text="By Cost 💷" x={225} y={30} textAnchor="end" />
-                        <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" labels={({ datum }) => `£${datum.cost}`} />
+                        <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" labels={({ datum }) => `£${datum.cost}`} style={{ data: { fill: '#004d40' } }} />
                     </VictoryChart>
                 }
                 {
                     isTopFive &&
                     <View style={{ width: '100%', alignItems: 'center' }}>
                         <VictoryPie
-                            colorScale={["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"]}
+                            colorScale={["black", "#19e9b6", "#004d40", "#323232", "#616161"]}
                             data={yearlyTopFive}
                             x={`product`}
                             y="amount"
@@ -210,7 +238,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                             centerTitle
                             orientation="horizontal"
                             gutter={20}
-                            data={handleLegend(yearlyTopFive, ["#007ED6", "#72b4eb", "#0a417a", "#323232", "#616161"])}
+                            data={handleLegend(yearlyTopFive, ["black", "#19e9b6", "#004d40", "#323232", "#616161"])}
                         />
                     </View>
 
@@ -251,5 +279,12 @@ const styles = StyleSheet.create({
     headerLabel: {
         textAlign: 'center',
         fontSize: 20
+    },
+    textBar: {
+        width: 40,
+        backgroundColor: '#004d40',
+        height: 2,
+        borderRadius: 5,
+        alignSelf: 'center'
     }
 })

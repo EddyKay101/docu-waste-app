@@ -39,20 +39,23 @@ const HomeScreen = ({ navigation }) => {
     }
     return (
         <View style={styles.container}>
-            <Panel
-                label="Items Scanned"
-                value={totalAmount}
-                icon="barcode"
-            />
-            <Panel
-                label="Wastage Cost"
-                value={parseFloat(totalCost).toFixed(2)}
-                icon="pound"
-            />
-            <PanelBtn
-                label="Scan Items"
-                onPress={() => navigation.navigate("Scan")}
-            />
+            <View style={{ padding: 16 }}>
+                <Panel
+                    label="Items Scanned"
+                    value={totalAmount}
+                    icon="barcode"
+                />
+                <Panel
+                    label="Wastage Cost"
+                    value={parseFloat(totalCost).toFixed(2)}
+                    icon="pound"
+                />
+                <PanelBtn
+                    label="Scan Items"
+                    onPress={() => navigation.navigate("Scan")}
+                />
+            </View>
+
 
         </View>
     );
