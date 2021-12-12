@@ -14,13 +14,19 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#311b92"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.docuwaste.docuwaste",
       "adaptiveIcon": {
         "backgroundColor": "#cfcfd4"
-      }
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"

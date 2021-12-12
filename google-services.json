@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "504426832186",
+    "project_id": "docu-waste",
+    "storage_bucket": "docu-waste.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:504426832186:android:dd99ae584a86a125933003",
+        "android_client_info": {
+          "package_name": "com.docuwaste.docuwaste"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "504426832186-fsslkkh37nqto1qf2j9582bkefq34p71.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPKVVJX_U5IxeMpOCgZ2HMCdYgeEa8_5Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "504426832186-fsslkkh37nqto1qf2j9582bkefq34p71.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
