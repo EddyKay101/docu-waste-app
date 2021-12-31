@@ -12,6 +12,8 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
     const [isAmountLink, setAmountLink] = useState(false);
     const [isCostLink, setCostLink] = useState(false);
     const [isTopFiveLink, setTopFiveLink] = useState(false);
+    const [curYear, setYear] = useState(moment().year());
+    const [isCurYear, setCurYear] = useState(false);
     const handleSelection = (selection) => {
         switch (selection) {
             case 'amount':
@@ -27,6 +29,19 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                 setIsCost(false);
                 setIsAmount(false);
                 setIsTopFive(false);
+        }
+    };
+
+    const handleYearSelection = (year) => {
+        switch (year) {
+            case moment().year():
+                setYear(() => moment().year());
+                break;
+            case moment().subtract(1, 'years').year():
+                setYear(moment().subtract(1, 'years').year());
+                break;
+            default:
+                setYear(null);
         }
     };
     const byAmount = obj => {
@@ -72,7 +87,8 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setTopFiveLink(false);
         try {
             const res = await services.waste.get();
-            const sortedData = res.data.result.sort((a, b) => {
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const sortedData = thisYear.sort((a, b) => {
                 return new Date(a.dateScanned) - new Date(b.dateScanned)
             });
             // Get month from date
@@ -100,7 +116,8 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setTopFiveLink(false);
         try {
             const res = await services.waste.get();
-            const sortedData = res.data.result.sort((a, b) => {
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const sortedData = thisYear.sort((a, b) => {
                 return new Date(a.dateScanned) - new Date(b.dateScanned)
             });
             // Get month from date
@@ -129,7 +146,8 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setTopFiveLink(true);
         try {
             const res = await services.waste.get();
-            const sumByProduct = res.data.result.reduce((acc, cur) => {
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const sumByProduct = thisYear.reduce((acc, cur) => {
                 acc[cur.product] = acc[cur.product] + cur.amount || cur.amount;
 
                 return acc;
@@ -247,18 +265,34 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
 
 
             </View>
-
+            <View style={styles.byYearContainer}>
+                <TouchableOpacity
+                    onPress={() => {
+                        handleYearSelection(moment().year())
+                    }}
+                >
+                    <Text style={curYear === moment().year() ? { color: '#004d40', fontWeight: 'bold', ...styles.byYearText } : styles.byYearText}>{moment().year()}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+                        handleYearSelection(moment().subtract(1, 'years').year())
+                    }}
+                >
+                    <Text style={curYear === moment().subtract(1, 'years').year() ? { color: '#004d40', fontWeight: 'bold', ...styles.byYearText } : styles.byYearText}>{moment().subtract(1, 'years').year()}</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     )
 }
 
-export default YearlyReports
+export default YearlyReports;
 
 const styles = StyleSheet.create({
     container: {
         width: '100%',
         flexDirection: 'column',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        flex: 1
     },
     chartContainer: {
         alignSelf: 'center',
@@ -286,5 +320,16 @@ const styles = StyleSheet.create({
         height: 2,
         borderRadius: 5,
         alignSelf: 'center'
+    },
+    byYearContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '25%',
+        alignSelf: 'flex-end',
+        right: '5%',
+        marginTop: 'auto'
+    },
+    byYearText: {
+        fontSize: 16,
     }
 })

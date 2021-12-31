@@ -51,7 +51,6 @@ const ScanScreen = ({ navigation }) => {
 
             playSound();
             const res = await services.products.get(`/${data}`);
-            // const res = await waste.get(`/${data}`);
             await AsyncStorage.getItem('items')
                 .then(async (items) => {
                     const i = items ? JSON.parse(items) : [];

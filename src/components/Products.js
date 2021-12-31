@@ -189,7 +189,6 @@ const Products = ({ storageKey, navigation }) => {
                     i.concat(existing);
                     AsyncStorage.setItem(storageKey, JSON.stringify(i));
                     handleProductSummary(i, obj.barcode);
-                    // getTotal(i);
                 });
 
         } catch (e) {
@@ -329,6 +328,7 @@ const Products = ({ storageKey, navigation }) => {
                                             <Text>{summary.amount}</Text> :
                                             <TextInput
                                                 onChangeText={(val) => setValue({ ...value, amount: val })}
+                                                keyboardType='numeric'
                                                 style={styles.text}
                                                 autoCompleteType='off'
                                                 placeholder='qty'
