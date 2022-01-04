@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
+import { StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native'
 import moment from 'moment';
 import * as services from '../api/docu-waste';
 import { VictoryBar, VictoryChart, VictoryTheme, VictoryLabel, VictoryPie, VictoryLegend } from "victory-native";
@@ -13,17 +13,24 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
     const [isCostLink, setCostLink] = useState(false);
     const [isTopFiveLink, setTopFiveLink] = useState(false);
     const [curYear, setYear] = useState(moment().year());
-    const [isCurYear, setCurYear] = useState(false);
+    const [selection, setSelection] = useState('');
+    const componentIsMounted = useRef(true);
+    useEffect(() => {
+
+        return () => {
+            componentIsMounted.current = false;
+        }
+    }, []);
     const handleSelection = (selection) => {
         switch (selection) {
             case 'amount':
-                handleGetYearlyDataByAmount();
+                handleGetYearlyDataByAmount(curYear);
                 break;
             case 'cost':
-                handleGetYearlyDataByCost();
+                handleGetYearlyDataByCost(curYear);
                 break;
             case 'topFive':
-                handleGetTopFive();
+                handleGetTopFive(curYear);
                 break;
             default:
                 setIsCost(false);
@@ -35,14 +42,19 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
     const handleYearSelection = (year) => {
         switch (year) {
             case moment().year():
-                setYear(() => moment().year());
+                setYear(moment().year());
                 break;
             case moment().subtract(1, 'years').year():
                 setYear(moment().subtract(1, 'years').year());
                 break;
+            case moment().subtract(2, 'years').year():
+                setYear(moment().subtract(2, 'years').year());
+                break;
             default:
                 setYear(null);
         }
+
+
     };
     const byAmount = obj => {
         const res = [];
@@ -77,17 +89,19 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         });
         return res.sort((a, b) => b.amount - a.amount).slice(0, 5);;
     };
-    const handleGetYearlyDataByAmount = async () => {
+    const handleGetYearlyDataByAmount = async (year) => {
+
         setSpinner(true);
-        setIsAmount(true);
         setIsCost(false);
         setIsTopFive(false);
+        setIsAmount(true);
+
         setAmountLink(true);
         setCostLink(false);
         setTopFiveLink(false);
         try {
             const res = await services.waste.get();
-            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === year);
             const sortedData = thisYear.sort((a, b) => {
                 return new Date(a.dateScanned) - new Date(b.dateScanned)
             });
@@ -99,24 +113,31 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                 acc[cur.month] = acc[cur.month] + cur.amount || cur.amount;
                 return acc
             }, {});
-            setYearlyWasteDataByAmount(byAmount(sumAmountPerMonth));
+            if (componentIsMounted.current) {
+
+                setYearlyWasteDataByAmount(byAmount(sumAmountPerMonth));
+
+            }
             setSpinner(false);
 
         } catch (err) {
             console.log(err);
         }
+
     }
-    const handleGetYearlyDataByCost = async () => {
+    const handleGetYearlyDataByCost = async (year) => {
+
         setSpinner(true);
-        setIsCost(true);
         setIsAmount(false);
         setIsTopFive(false);
+        setIsCost(true);
+
         setAmountLink(false);
         setCostLink(true);
         setTopFiveLink(false);
         try {
             const res = await services.waste.get();
-            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === year);
             const sortedData = thisYear.sort((a, b) => {
                 return new Date(a.dateScanned) - new Date(b.dateScanned)
             });
@@ -129,14 +150,19 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                 acc[cur.month] = acc[cur.month] + costToInt || costToInt;
                 return acc
             }, {});
-            setYearlyWasteDataByCost(byCost(sumCostPerMonth));
+            if (componentIsMounted.current) {
+
+                setYearlyWasteDataByCost(byCost(sumCostPerMonth));
+
+            }
             setSpinner(false);
 
         } catch (err) {
             console.log(err);
         }
+
     }
-    const handleGetTopFive = async () => {
+    const handleGetTopFive = async (year) => {
         setSpinner(true);
         setIsCost(false);
         setIsAmount(false);
@@ -146,7 +172,7 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
         setTopFiveLink(true);
         try {
             const res = await services.waste.get();
-            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === curYear);
+            const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === year);
             const sumByProduct = thisYear.reduce((acc, cur) => {
                 acc[cur.product] = acc[cur.product] + cur.amount || cur.amount;
 
@@ -182,6 +208,8 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
 
         return filteredArr;
     }
+
+
     return (
         <View style={{ ...styles.container }} >
             <View style={styles.headerSelection}>
@@ -192,8 +220,12 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                             isAmountLink &&
                             <View style={styles.textBar}></View>
                         }
+
                         <TouchableOpacity
-                            onPress={() => handleSelection('amount')}
+                            onPress={() => {
+                                setSelection(() => 'amount');
+                                handleSelection('amount');
+                            }}
                         >
                             <Text>By Amount</Text>
                         </TouchableOpacity>
@@ -204,7 +236,11 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
                             <View style={styles.textBar}></View>
                         }
                         <TouchableOpacity
-                            onPress={() => handleSelection('cost')}
+                            onPress={() => {
+                                setSelection(() => 'cost')
+                                handleSelection('cost');
+
+                            }}
                         >
                             <Text>By Cost</Text>
                         </TouchableOpacity>
@@ -226,14 +262,14 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
             <View style={styles.chartContainer}>
                 {
                     isAmount &&
-                    <VictoryChart animate width={400} theme={VictoryTheme.material}>
+                    <VictoryChart width={400} theme={VictoryTheme.material}>
                         <VictoryLabel text="By Amount 🗑" x={225} y={30} textAnchor="end" />
                         <VictoryBar data={yearlyWasteDataByAmount} x="month" y="amount" labels={({ datum }) => `${datum.amount}`} style={{ data: { fill: '#004d40' } }} />
                     </VictoryChart>
                 }
                 {
                     isCost &&
-                    <VictoryChart width={400} animate theme={VictoryTheme.material}>
+                    <VictoryChart width={400} theme={VictoryTheme.material}>
                         <VictoryLabel text="By Cost 💷" x={225} y={30} textAnchor="end" />
                         <VictoryBar data={yearlyWasteDataByCost} x="month" y="cost" labels={({ datum }) => `£${datum.cost}`} style={{ data: { fill: '#004d40' } }} />
                     </VictoryChart>
@@ -268,17 +304,45 @@ const YearlyReports = ({ setSpinner, setYearlyWasteDataByAmount, setYearlyWasteD
             <View style={styles.byYearContainer}>
                 <TouchableOpacity
                     onPress={() => {
-                        handleYearSelection(moment().year())
+                        if (selection === 'amount') {
+                            handleGetYearlyDataByAmount(moment().year())
+                            handleYearSelection(moment().year());
+                        } else if (selection === 'cost') {
+                            handleGetYearlyDataByCost(moment().year())
+                            handleYearSelection(moment().year());
+                        }
                     }}
                 >
                     <Text style={curYear === moment().year() ? { color: '#004d40', fontWeight: 'bold', ...styles.byYearText } : styles.byYearText}>{moment().year()}</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                     onPress={() => {
-                        handleYearSelection(moment().subtract(1, 'years').year())
+
+                        if (selection === 'amount') {
+                            handleGetYearlyDataByAmount(moment().subtract(1, 'years').year());
+                            handleYearSelection(moment().subtract(1, 'years').year());
+                        } else if (selection === 'cost') {
+                            handleGetYearlyDataByCost(moment().subtract(1, 'years').year())
+                            handleYearSelection(moment().subtract(1, 'years').year());
+                        }
                     }}
                 >
                     <Text style={curYear === moment().subtract(1, 'years').year() ? { color: '#004d40', fontWeight: 'bold', ...styles.byYearText } : styles.byYearText}>{moment().subtract(1, 'years').year()}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => {
+
+                        if (selection === 'amount') {
+                            handleGetYearlyDataByAmount(moment().subtract(2, 'years').year());
+                            handleYearSelection(moment().subtract(2, 'years').year());
+                        } else if (selection === 'cost') {
+                            handleGetYearlyDataByCost(moment().subtract(2, 'years').year())
+                            handleYearSelection(moment().subtract(2, 'years').year());
+                        }
+                    }}
+                >
+                    <Text style={curYear === moment().subtract(2, 'years').year() ? { color: '#004d40', fontWeight: 'bold', ...styles.byYearText } : styles.byYearText}>{moment().subtract(2, 'years').year()}</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -324,7 +388,7 @@ const styles = StyleSheet.create({
     byYearContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '25%',
+        width: '40%',
         alignSelf: 'flex-end',
         right: '5%',
         marginTop: 'auto'

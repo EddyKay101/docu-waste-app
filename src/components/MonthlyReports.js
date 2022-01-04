@@ -21,7 +21,8 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
             try {
                 let months = [];
                 const res = await services.waste.get();
-                const sortedData = res.data.result.sort((a, b) => {
+                const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === year);
+                const sortedData = thisYear.data.result.sort((a, b) => {
                     return new Date(a.dateScanned) - new Date(b.dateScanned)
                 });
                 const month = sortedData.map(sd => ({ ...sd, month: moment(sd.dateScanned).format('MMM') }));
