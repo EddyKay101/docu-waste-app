@@ -16,13 +16,16 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
     const [isAmountLink, setAmountLink] = useState(false);
     const [isCostLink, setCostLink] = useState(false);
     const [isTopFiveLink, setTopFiveLink] = useState(false);
+    const [curYear, setYear] = useState(moment().year());
     useEffect(() => {
         (async () => {
             try {
                 let months = [];
                 const res = await services.waste.get();
-                const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === year);
-                const sortedData = thisYear.data.result.sort((a, b) => {
+
+                const thisYear = res.data.result.filter(a => moment(a.dateScanned).year() === moment().year());
+
+                const sortedData = thisYear.sort((a, b) => {
                     return new Date(a.dateScanned) - new Date(b.dateScanned)
                 });
                 const month = sortedData.map(sd => ({ ...sd, month: moment(sd.dateScanned).format('MMM') }));
@@ -39,6 +42,8 @@ const MonthlyReports = ({ setSpinner, setMonthlyWasteDataByAmount, setMonthlyWas
                     });
                 });
                 setOptions(months);
+
+
             } catch (err) {
                 console.log(err)
             }

@@ -75,8 +75,6 @@ const ScanScreen = ({ navigation }) => {
 
 
                 });
-
-
         }
         catch (err) {
 
