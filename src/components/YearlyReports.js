@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, Button } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import moment from 'moment';
 import * as services from '../api/docu-waste';
 import { VictoryBar, VictoryChart, VictoryTheme, VictoryLabel, VictoryPie, VictoryLegend } from "victory-native";

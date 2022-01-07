@@ -43,7 +43,6 @@ const ScanScreen = ({ navigation }) => {
             : undefined;
     }, [sound]);
 
-
     const handleBarCodeScanned = async ({ data }) => {
         try {
             setScanned(true);
@@ -53,8 +52,11 @@ const ScanScreen = ({ navigation }) => {
             const res = await services.products.get(`/${data}`);
             await AsyncStorage.getItem('items')
                 .then(async (items) => {
+
                     const i = items ? JSON.parse(items) : [];
+
                     const itemFound = i.some(el => el.barcode === res.data.result.barcode);
+
                     if (!itemFound) {
                         res.data.result.amount = 1;
                         res.data.result.cost = parseFloat(res.data.result.price).toFixed(2);
@@ -77,7 +79,8 @@ const ScanScreen = ({ navigation }) => {
                 });
         }
         catch (err) {
-
+            err = "Item not Found"
+            alert(err);
         }
 
     };

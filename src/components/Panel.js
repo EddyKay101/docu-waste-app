@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Dimensions } from 'react-native';
 import { AntDesign, Foundation } from '@expo/vector-icons';
 
 
@@ -32,11 +32,10 @@ const styles = StyleSheet.create({
         borderWidth: .5,
         flexDirection: 'column',
         maxWidth: 349,
-        height: 165,
+        height: Dimensions.get('screen').height - 3000,
         backgroundColor: '#f8f9f9',
         borderRadius: 40,
         padding: 20,
-
 
     },
     label: {

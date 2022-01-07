@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Animated, Dimensions, View } from "react-native";
+import { Animated, Dimensions, View, Platform } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Logo....
@@ -38,7 +38,7 @@ const SplashScreen = ({ navigation }) => {
                     startAnimation,
                     {
                         // For same Height for non safe Area Devices...
-                        toValue: -Dimensions.get('window').height + (edges.top + 141),
+                        toValue: Platform.OS === 'ios' ? -Dimensions.get('window').height + (edges.top + 160) : -Dimensions.get('window').height + (edges.top + 131),
                         useNativeDriver: true
                     }
                 ),
@@ -64,7 +64,7 @@ const SplashScreen = ({ navigation }) => {
                         // Moving to Right Most...
                         toValue: {
                             x: (Dimensions.get("window").width / 2) - 35,
-                            y: (Dimensions.get('window').height / 2) - 35
+                            y: Platform.OS === 'ios' ? (Dimensions.get('window').height / 2) - 55 : (Dimensions.get('window').height / 2) - 35
                         },
                         useNativeDriver: true
                     }
@@ -76,7 +76,7 @@ const SplashScreen = ({ navigation }) => {
                         toValue: {
                             x: 0,
                             // Since image size is 100...
-                            y: (Dimensions.get('window').height / 2) - 120
+                            y: Platform.OS === 'ios' ? (Dimensions.get('window').height / 2) - 140 : (Dimensions.get('window').height / 2) - 120
                         },
                         useNativeDriver: true
                     }

@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import React, { useEffect, useState, useRef } from 'react';
-import { View, StyleSheet, Text, Button, TouchableOpacity, FlatList, Alert, Platform, TextInput } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, FlatList, Alert, Platform, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as services from '../api/docu-waste';
 import { LinearGradient } from 'expo-linear-gradient';
