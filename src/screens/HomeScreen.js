@@ -54,7 +54,9 @@ const HomeScreen = ({ navigation }) => {
                     <MaterialCommunityIcons name="close-thick" onPress={() => setModalVisible(!modalVisible)} style={styles.icon} />
                     <View style={styles.modalView}>
                         <Text>Add a new food item, existing items will not be saved</Text>
-                        <Form />
+                        <Form
+                            setModalVisible={setModalVisible}
+                        />
                     </View>
                 </View>
             </Modal>
