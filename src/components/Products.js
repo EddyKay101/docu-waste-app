@@ -184,11 +184,15 @@ const Products = ({ storageKey, navigation }) => {
                     });
                     const itemCost = parseFloat(existing[0].price).toFixed(2);
                     existing[0].amount = 0 + parseInt(value.amount);
-                    existing[0].cost = parseFloat((itemCost * existing[0].amount)).toFixed(2);
-                    existing.push(existing[0]);
-                    i.concat(existing);
-                    AsyncStorage.setItem(storageKey, JSON.stringify(i));
-                    handleProductSummary(i, obj.barcode);
+                    if (!existing[0].amount) {
+                        alert("Please enter a valid amount starting from 1");
+                    } else {
+                        existing[0].cost = parseFloat((itemCost * existing[0].amount)).toFixed(2);
+                        existing.push(existing[0]);
+                        i.concat(existing);
+                        AsyncStorage.setItem(storageKey, JSON.stringify(i));
+                        handleProductSummary(i, obj.barcode);
+                    }
                 });
 
         } catch (e) {
